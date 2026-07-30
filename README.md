@@ -54,7 +54,7 @@ To get started, you'll need the following API keys/software:
 ### Clone the repository:
 
 ```bash
-git clone https://github.com/langchain-ai/social-media-agent.git
+git clone https://github.com/iamnearu/HEMApilot.git
 ```
 
 ```bash
@@ -169,7 +169,7 @@ To use all of the features of the Social Media Agent, you'll need the following:
 ### Clone the repository:
 
 ```bash
-git clone https://github.com/langchain-ai/social-media-agent.git
+git clone https://github.com/iamnearu/HEMApilot.git
 ```
 
 ```bash

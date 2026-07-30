@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  orchestrator:
+    build:
+      context: .
+      dockerfile: services/orchestrator/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - INGESTION_SERVICE_URL=http://ingestion:8001
+      - GENERATION_SERVICE_URL=http://generation:8002
+      - VERIFICATION_SERVICE_URL=http://verification:8003
+      - PUBLISHING_SERVICE_URL=http://publishing:8004
+      - MEDIA_SERVICE_URL=http://media:8005
+    depends_on:
+      - ingestion
+      - generation
+      - verification
+      - publishing
+      - media
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: services/ingestion/Dockerfile
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+
+  generation:
+    build:
+      context: .
+      dockerfile: services/generation/Dockerfile
+    ports:
+      - "8002:8000"
+    env_file:
+      - .env
+
+  verification:
+    build:
+      context: .
+      dockerfile: services/verification/Dockerfile
+    ports:
+      - "8003:8000"
+    env_file:
+      - .env
+
+  publishing:
+    build:
+      context: .
+      dockerfile: services/publishing/Dockerfile
+    ports:
+      - "8004:8000"
+    env_file:
+      - .env
+
+  media:
+    build:
+      context: .
+      dockerfile: services/media/Dockerfile
+    ports:
+      - "8005:8000"
+    env_file:
+      - .env

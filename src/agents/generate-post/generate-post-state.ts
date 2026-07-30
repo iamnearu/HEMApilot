@@ -49,7 +49,7 @@ export const GeneratePostAnnotation = Annotation.Root({
    *
    * TODO: Refactor the post/complexPost state interfaces to use a single shared interface
    * which includes images too.
-   * Tracking issue: https://github.com/langchain-ai/social-media-agent/issues/144
+   * Tracking issue: https://github.com/iamnearu/HEMApilot/issues/144
    */
   complexPost: Annotation<ComplexPost | undefined>({
     reducer: (_state, update) => update,

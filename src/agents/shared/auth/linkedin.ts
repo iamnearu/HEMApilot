@@ -9,7 +9,7 @@ import Arcade from "@arcadeai/arcadejs";
 import { useArcadeAuth } from "../../utils.js";
 
 const LINKEDIN_AUTHORIZATION_DOCS_URL =
-  "https://github.com/langchain-ai/social-media-agent?tab=readme-ov-file#setup";
+  "https://github.com/iamnearu/HEMApilot?tab=readme-ov-file#setup";
 
 /**
  * Checks LinkedIn authorization status and triggers an interrupt if authorization is needed.
