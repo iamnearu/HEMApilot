@@ -1,422 +1,354 @@
-# Social Media Agent
+# 🚀 HEMApilot — Nền tảng Quản lý Nội dung Mạng xã hội Thông minh
 
-This repository contains an 'agent' which can take in a URL, and generate a Twitter & LinkedIn post based on the content of the URL. It uses a human-in-the-loop (HITL) flow to handle authentication with different social media platforms, and to allow the user to make changes, or accept/reject the generated post.
+<p align="center">
+  <strong>AI-Powered Social Media Content Platform</strong><br/>
+  Tự động hóa toàn bộ quy trình sáng tạo, kiểm duyệt, và đăng tải nội dung mạng xã hội<br/>
+  với kiến trúc Microservices + LangGraph + Human-in-the-Loop
+</p>
 
-![Screenshot of the social media agent flow](./static/agent_flow.png)
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-blue?logo=python" alt="Python" />
+  <img src="https://img.shields.io/badge/FastAPI-0.110+-green?logo=fastapi" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/Docker-Compose-blue?logo=docker" alt="Docker" />
+  <img src="https://img.shields.io/badge/LangGraph-AI_Agent-purple" alt="LangGraph" />
+  <img src="https://img.shields.io/badge/License-MIT-yellow" alt="License" />
+</p>
 
-## Table of contents
+---
 
-- [Quickstart](#quickstart)
-  - [Environment variables](#set-environment-variables)
-  - [LangGraph Server](#start-the-langgraph-server)
-- [Full setup](#advanced-setup)
-  - [Environment variables](#set-environment-variables-1)
-  - [Authentication](#setup-authentication)
-  - [Supabase](#setup-supabase)
-  - [Slack](#setup-slack)
-  - [GitHub](#setup-github)
-- [Usage](#usage)
-  - [Generate Post](#generate-post)
-  - [Setup Crons](#setup-crons)
-  - [Prebuilt Scripts](#prebuilt-scripts)
-- [Setup Agent Inbox](#setup-agent-inbox)
-  - [Using the deployed inbox](#using-the-deployed-inbox)
-  - [Using the local inbox](#using-the-local-inbox)
-- [Customization](#customization)
-  - [Prompts](#prompts)
-  - [Post Style](#post-style)
+## 📋 Mục lục
 
-# Quickstart
+- [Tổng quan](#-tổng-quan)
+- [Điểm nổi bật](#-điểm-nổi-bật-so-với-các-giải-pháp-hiện-có)
+- [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống-microservices)
+- [Các module sáng tạo](#-các-module-sáng-tạo-original)
+- [Cài đặt & Chạy thử](#-cài-đặt--chạy-thử)
+- [Cấu hình](#-cấu-hình)
+- [API Documentation](#-api-documentation)
+- [Kế hoạch phát triển](#-kế-hoạch-phát-triển)
 
-> [!TIP]
-> 🎥 For a visual guide, check out our [step-by-step video tutorial](https://youtu.be/TmTl5FMgkCQ) that walks you through the account setup process and project configuration.
+---
 
-This quickstart covers how to setup the Social Media Agent in a basic setup mode. This is the quickest way to get up and running, however it will lack some of the features of the full setup mode. See [here](#advanced-setup) for the full setup guide.
+## 🎯 Tổng quan
 
-<details>
-<summary>Running in basic setup mode will lack the following features:</summary>
+**HEMApilot** là một nền tảng quản lý nội dung mạng xã hội end-to-end, được xây dựng trên nền tảng AI Agent (LangGraph) với kiến trúc Microservices. Thay vì chỉ đơn thuần tạo bài viết, HEMApilot mang đến một hệ sinh thái hoàn chỉnh:
 
-- Parsing content from GitHub, Twitter or YouTube URLs
-- Ingesting data from Slack, or sending updates to Slack
-- Image selection & uploads
+```
+📥 Thu thập dữ liệu (Slack, GitHub, URL, YouTube)
+    ↓
+🔍 Phân tích & Xác minh nội dung
+    ↓
+✍️  Tạo bài viết bằng AI (đa ngôn ngữ, đa nền tảng)
+    ↓
+📊 Kiểm tra chất lượng & Brand Voice
+    ↓
+🧪 A/B Testing (Wilson Score Interval)
+    ↓
+📅 Lập lịch thông minh (Bayesian Optimization)
+    ↓
+🚀 Đăng tải tự động (Twitter, LinkedIn, Facebook)
+    ↓
+📈 Phân tích hiệu suất & Tự học
+```
 
-</details>
+### Vấn đề giải quyết
 
-To get started, you'll need the following API keys/software:
+| Vấn đề | Giải pháp của HEMApilot |
+|--------|------------------------|
+| Tạo nội dung thủ công, tốn thời gian | AI Agent tự động tạo bài viết từ URL/nguồn dữ liệu |
+| Không biết đăng lúc nào hiệu quả nhất | Smart Scheduler dùng Bayesian Optimization tìm "golden hours" |
+| Giọng văn không nhất quán giữa các bài | Brand Voice Guardian kiểm tra cosine similarity |
+| Không biết nội dung nào hiệu quả hơn | A/B Testing Framework với Wilson Score Interval |
+| Nội dung chỉ phục vụ 1 thị trường | Multilingual Adapter hỗ trợ VN, EN, JP, KR, TH |
+| Quy trình publish rời rạc | Pipeline tự động end-to-end với Human-in-the-Loop |
 
-- [Anthropic API](https://console.anthropic.com/) - General LLM
-- [LangSmith](https://smith.langchain.com/) - LangSmith API key required to run the LangGraph server locally (free)
-- [FireCrawl API](https://www.firecrawl.dev/) - Web scraping. New users get 500 credits for free
-- [Arcade](https://www.arcade.dev/) - Easy authentication for reading & writing to social media platforms
+---
 
-## Setup Instructions
+## ⭐ Điểm nổi bật so với các giải pháp hiện có
 
-### Clone the repository:
+### 1. 🧠 Content Analytics Engine
+> *Phân tích chất lượng bài viết TRƯỚC KHI đăng*
+
+Không chỉ tạo nội dung, HEMApilot còn **đánh giá chất lượng** bài viết dựa trên:
+- **Readability Score** — Điểm dễ đọc được điều chỉnh cho social media (có tính emoji, line breaks)
+- **Sentiment Analysis** — Phân tích cảm xúc: tích cực, tiêu cực, truyền cảm hứng
+- **Hashtag Effectiveness** — Đánh giá số lượng và chất lượng hashtag
+- **CTA Strength** — Đo sức mạnh Call-to-Action
+- **Engagement Prediction** — Dự đoán số likes, shares, comments
+
+```python
+from services.generation.analytics import ContentAnalyzer
+
+analyzer = ContentAnalyzer()
+report = analyzer.generate_report(
+    "🚀 Khám phá HEMApilot - nền tảng AI quản lý social media! #AI #Automation",
+    platform="twitter"
+)
+print(f"Điểm tổng: {report.overall_score}")
+print(f"Gợi ý: {report.suggestions}")
+```
+
+### 2. 🎨 Brand Voice Guardian
+> *Bảo vệ tính nhất quán giọng văn thương hiệu*
+
+Sử dụng **TF-IDF Cosine Similarity** để so sánh bài viết mới với "brand voice profile":
+- Tự học từ các bài viết mẫu của thương hiệu
+- Phát hiện vi phạm từ cấm
+- Kiểm tra phong cách emoji, hashtag theo brand guideline
+- Tự động phê duyệt hoặc đề xuất chỉnh sửa
+
+```python
+from services.generation.brand_voice import BrandVoiceGuardian, BrandVoiceProfile
+
+profile = BrandVoiceProfile(
+    brand_name="HEMApilot",
+    tone_keywords=["sáng tạo", "chuyên nghiệp", "thân thiện", "AI"],
+    forbidden_words=["spam", "click bait"],
+    example_posts=["🚀 AI đang thay đổi cách chúng ta làm marketing..."],
+)
+guardian = BrandVoiceGuardian(profile)
+result = guardian.check_consistency("Bài viết mới cần kiểm tra...")
+```
+
+### 3. 🧪 A/B Testing Framework
+> *So sánh hiệu suất nội dung bằng thống kê*
+
+Framework A/B testing chuyên biệt cho social media, sử dụng **Wilson Score Interval** — phương pháp thống kê phù hợp hơn normal approximation cho tỷ lệ engagement nhỏ:
+
+- Tạo và quản lý các biến thể nội dung
+- Thu thập dữ liệu engagement real-time
+- Xác định winner với **statistical significance**
+- Tự động đề xuất chiến lược dựa trên kết quả
+
+```python
+from services.orchestrator.ab_testing import ABTestEngine
+
+engine = ABTestEngine()
+test = engine.create_test(
+    name="Headline Test Q3",
+    hypothesis="Emoji ở đầu bài tăng engagement 20%",
+    variant_contents={
+        "Có emoji": "🚀 HEMApilot ra mắt tính năng mới!",
+        "Không emoji": "HEMApilot ra mắt tính năng mới!",
+    },
+)
+
+# Sau khi thu thập đủ data
+result = engine.analyze_test(test.test_id)
+print(result.recommendation)  # "🏆 Biến thể 'Có emoji' thắng với +23.5%..."
+```
+
+### 4. 📅 Smart Scheduler (Bayesian Optimization)
+> *Tìm "giờ vàng" đăng bài cho từng nền tảng*
+
+Không chỉ đặt lịch, mà **tự học** từ dữ liệu engagement lịch sử:
+- Bayesian update liên tục cập nhật mô hình
+- Tối ưu riêng cho từng nền tảng (Twitter, LinkedIn, Facebook, Instagram)
+- Content Calendar tự động với ưu tiên hóa
+- Tránh trùng lặp lịch đăng bài
+
+### 5. 🌏 Multilingual Content Adapter
+> *Không chỉ dịch, mà "localize" cho từng thị trường*
+
+Hỗ trợ 5 thị trường: 🇻🇳 Việt Nam, 🇺🇸 Mỹ, 🇯🇵 Nhật Bản, 🇰🇷 Hàn Quốc, 🇹🇭 Thái Lan
+- Đề xuất hashtags trending theo từng thị trường
+- Kiểm tra nhạy cảm văn hóa (emoji, giọng văn, format)
+- Điều chỉnh formality level tự động
+- Chuẩn bị metadata cho LLM localize chính xác
+
+---
+
+## 🏗️ Kiến trúc Hệ thống Microservices
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                    API Gateway / Client                  │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+         ┌─────────────▼──────────────┐
+         │    🎛️ Orchestrator Service  │
+         │    (Port 8000)              │
+         │  ┌────────────────────────┐ │
+         │  │ Smart Scheduler        │ │
+         │  │ A/B Testing Engine     │ │
+         │  │ Workflow Manager       │ │
+         │  └────────────────────────┘ │
+         └──┬────┬────┬────┬────┬─────┘
+            │    │    │    │    │
+    ┌───────▼┐ ┌▼────┐ ┌──▼──┐ ┌▼───────┐ ┌▼──────┐
+    │📥 Ingest│ │✍️ Gen│ │🔍Vrf│ │📤Publsh│ │🖼️Media│
+    │ Service │ │ Svc  │ │ Svc │ │Service │ │Service│
+    │  :8001  │ │:8002 │ │:8003│ │ :8004  │ │:8005  │
+    └─────────┘ └──────┘ └─────┘ └────────┘ └───────┘
+```
+
+### Mô tả từng Service
+
+| Service | Port | Trách nhiệm |
+|---------|------|-------------|
+| **Orchestrator** | 8000 | Điều phối workflow, Smart Scheduler, A/B Testing |
+| **Ingestion** | 8001 | Thu thập dữ liệu từ Slack, GitHub, YouTube, URL |
+| **Generation** | 8002 | Tạo nội dung AI, Analytics Engine, Brand Voice, Multilingual |
+| **Verification** | 8003 | Xác minh link, kiểm tra Reddit/Tweet |
+| **Publishing** | 8004 | Đăng bài lên Twitter, LinkedIn (OAuth/Arcade) |
+| **Media** | 8005 | Tìm kiếm, tạo, upload hình ảnh (Supabase) |
+
+### Công nghệ sử dụng
+
+| Layer | Công nghệ |
+|-------|-----------|
+| **Language** | Python 3.11+ |
+| **API Framework** | FastAPI + Uvicorn |
+| **AI/LLM** | LangGraph, LangChain, Anthropic Claude |
+| **Data Validation** | Pydantic v2 |
+| **Containerization** | Docker + Docker Compose |
+| **Image Storage** | Supabase |
+| **Social Media Auth** | Arcade, OAuth 2.0 |
+| **Web Scraping** | FireCrawl |
+| **Statistical Testing** | Wilson Score Interval (tự implement) |
+| **Scheduling Algorithm** | Bayesian Optimization (tự implement) |
+
+---
+
+## 📦 Cài đặt & Chạy thử
+
+### Yêu cầu
+
+- Python 3.11+
+- Docker & Docker Compose
+- API Keys (xem phần [Cấu hình](#-cấu-hình))
+
+### Chạy với Docker Compose
 
 ```bash
+# Clone repository
 git clone https://github.com/iamnearu/HEMApilot.git
-```
+cd HEMApilot
 
-```bash
-cd social-media-agent
-```
-
-### Install dependencies:
-
-```bash
-yarn install
-```
-
-### Set environment variables.
-
-Copy the values of the quickstart `.env.quickstart.example` to `.env`, then add the values:
-
-```bash
+# Cấu hình biến môi trường
 cp .env.quickstart.example .env
+# Chỉnh sửa .env với API keys của bạn
+
+# Khởi chạy toàn bộ hệ thống
+docker compose up --build
+
+# Kiểm tra health
+curl http://localhost:8000/health
 ```
 
-Once done, ensure you have the following environment variables set:
+### Chạy từng service (Development)
 
 ```bash
-# For LangSmith tracing (optional)
-LANGSMITH_API_KEY=
-LANGSMITH_TRACING_V2=true
+# Cài đặt dependencies
+cd services/orchestrator
+pip install -e .
 
-# For LLM generations
-ANTHROPIC_API_KEY=
-
-# For web scraping
-FIRECRAWL_API_KEY=
-
-# Arcade API key - used for fetching Tweets, and scheduling LinkedIn/Twitter posts
-ARCADE_API_KEY=
+# Chạy service
+uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-If you plan to post to LinkedIn as an organization (rather than as yourself), you'll also need to set:
+---
+
+## ⚙️ Cấu hình
+
+Tạo file `.env` từ template và điền các API key:
 
 ```bash
-# Get the organization ID from the URL of the company page when you're logged in as an admin.
-# For example, if the URL is `https://www.linkedin.com/company/12345678/admin/dashboard/`, the organization ID would be `12345678`.
-POST_TO_LINKEDIN_ORGANIZATION=true
-LINKEDIN_ORGANIZATION_ID=
+# LLM
+ANTHROPIC_API_KEY=your_key_here
+
+# Web Scraping
+FIRECRAWL_API_KEY=your_key_here
+
+# Social Media Authentication
+ARCADE_API_KEY=your_key_here
+TWITTER_USER_ID=your_twitter_id
+LINKEDIN_USER_ID=your_linkedin_id
+
+# Image Storage
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_key_here
+
+# Slack (tuỳ chọn)
+SLACK_BOT_TOKEN=your_token_here
+SLACK_CHANNEL_ID=your_channel_id
 ```
 
-### Install LangGraph CLI
+---
 
+## 📖 API Documentation
+
+Sau khi khởi chạy, truy cập Swagger UI tại:
+
+- **Orchestrator**: http://localhost:8000/docs
+- **Ingestion**: http://localhost:8001/docs
+- **Generation**: http://localhost:8002/docs
+- **Verification**: http://localhost:8003/docs
+- **Publishing**: http://localhost:8004/docs
+- **Media**: http://localhost:8005/docs
+
+### Ví dụ API Calls
+
+**Tạo bài viết từ URL:**
 ```bash
-pip install langgraph-cli
+curl -X POST http://localhost:8000/api/v1/generate \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com/blog-post", "platforms": ["twitter", "linkedin"]}'
 ```
 
-Then run the following command to check the CLI is installed:
-
+**Kiểm tra chất lượng nội dung:**
 ```bash
-langgraph --version
+curl -X POST http://localhost:8002/api/v1/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"content": "Bài viết cần phân tích...", "platform": "twitter"}'
 ```
 
-Click [here](https://langchain-ai.github.io/langgraph/cloud/reference/cli/) to read the full download instructions for the LangGraph CLI.
-
-### Start the LangGraph server:
-
-To start the LangGraph server, run this script:
-
+**Gợi ý lịch đăng bài:**
 ```bash
-yarn langgraph:in_mem:up
+curl -X GET http://localhost:8000/api/v1/schedule/suggest?platform=twitter
 ```
 
-Under the hood, this will execute the following command:
+---
 
-```bash
-npx @langchain/langgraph-cli dev --port 54367
-```
+## 🗺️ Kế hoạch phát triển
 
-> [!NOTE]
-> The first time running this command (or if a new version of `@langchain/langgraph-cli` has been released), it will ask you to accept an install for the CLI. Enter `y` to accept.
+### Đã hoàn thành ✅
+- [x] Kiến trúc Microservices (6 services)
+- [x] Docker Compose orchestration
+- [x] Content Analytics Engine
+- [x] Brand Voice Guardian (TF-IDF Cosine Similarity)
+- [x] A/B Testing Framework (Wilson Score Interval)
+- [x] Smart Scheduler (Bayesian Optimization)
+- [x] Multilingual Content Adapter (5 thị trường)
+- [x] Shared schemas với Pydantic v2
 
-Once the server is ready, you can execute the following command to generate a post:
+### Đang phát triển 🚧
+- [ ] Hoàn thiện migration TypeScript → Python cho tất cả agents
+- [ ] Dashboard real-time (React + WebSocket)
+- [ ] Integration tests cho cross-service communication
+- [ ] CI/CD pipeline
 
-```bash
-yarn generate_post
-```
+### Tương lai 🔮
+- [ ] Thêm nền tảng: TikTok, Instagram, Facebook
+- [ ] Competitor analysis module
+- [ ] Auto-reply engine cho comments
+- [ ] Visual content generation (DALL-E / Stable Diffusion)
+- [ ] Mobile app (React Native)
 
-You may also modify this script to pass different URLs to generate posts for other content.
+---
 
-This will kick off a new run to generate a post on a [LangChain blog post](https://blog.langchain.dev/customers-appfolio/).
+## 🧑‍💻 Tác giả
 
-To view the output, either inspect it in LangSmith, or use Agent Inbox.
+**iamnearu** — Phát triển và thiết kế kiến trúc hệ thống
 
-> [!TIP]
-> Follow these steps to setup & configure the Agent Inbox: [Setup Agent Inbox Guide](#setup-agent-inbox)
+---
 
-# Advanced Setup
+## 📄 Giấy phép
 
-![Screenshot of the social media agent graph](./static/graph_screenshot.png)
+Dự án được phân phối theo giấy phép [MIT](LICENSE).
 
-To use all of the features of the Social Media Agent, you'll need the following:
+---
 
-- [Anthropic API](https://console.anthropic.com/) - General LLM
-- [Google Vertex AI](https://cloud.google.com/vertex-ai) - For dealing with YouTube video content
-- [LangSmith](https://smith.langchain.com/) - LangSmith API key required to run the LangGraph server locally (free)
-- [FireCrawl API](https://www.firecrawl.dev/) - Web scraping
-- [Arcade](https://www.arcade.dev) - Social media authentication and scheduling
-- [Twitter Developer Account](https://developer.twitter.com/en/portal/dashboard) - For uploading media to Twitter
-- [LinkedIn Developer Account](https://developer.linkedin.com/) - Posting to LinkedIn
-- [GitHub API](https://github.com/settings/personal-access-tokens) - Reading GitHub content
-- [Supabase](https://supabase.com/) - Storing images
-- [Slack Developer Account](https://api.slack.com/apps) (optional) - ingesting data from a Slack channel
-
-## Setup Instructions
-
-### Clone the repository:
-
-```bash
-git clone https://github.com/iamnearu/HEMApilot.git
-```
-
-```bash
-cd social-media-agent
-```
-
-### Install dependencies:
-
-```bash
-yarn install
-```
-
-### Set environment variables.
-
-Copy the values of the full env example file `.env.full.example` to `.env`, then update the values as needed.
-
-```bash
-cp .env.full.example .env
-```
-
-### Setup authentication
-
-The agent needs your authorization to read and write to social media platforms. There are two ways to authorize the agent:
-
-1. Use Arcade (quickest to set up)
-2. Use your own Twitter and LinkedIn developer accounts
-
-You can use either method, but not both.
-
-#### Arcade setup
-
-Create an Arcade account [here](https://www.arcade.dev). After you register, [get an Arcade API key](https://docs.arcade.dev/home/quickstart?lang=typescript). Set this value as `ARCADE_API_KEY` in your `.env` file.
-
-Then, you will need to set these environment variables in your `.env` file:
-
-- `TWITTER_USER_ID` - The ID/email of the Twitter account you want to use to post to Twitter.
-- `LINKEDIN_USER_ID` - The ID/email of the LinkedIn account you want to use to post to LinkedIn.
-
-Make sure you have the `USE_ARCADE_AUTH` environment variable set to `true` to have the graph use Arcade authentication.
-
-If you plan to post to LinkedIn as an organization (rather than as yourself), you'll also need to set:
-
-```bash
-# Get the organization ID from the URL of the company page when you're logged in as an admin.
-# For example, if the URL is `https://www.linkedin.com/company/12345678/admin/dashboard/`, the organization ID would be `12345678`.
-LINKEDIN_ORGANIZATION_ID=
-POST_TO_LINKEDIN_ORGANIZATION=true
-```
-
-> [!NOTE]
-> If you want to upload media to Twitter, you will still need to set up your own Twitter developer account (below) in addition to using Arcade.
->
-> If you are only planning to read/write text posts on Twitter, you can use Arcade without any additional setup.
-
-#### Twitter app setup
-
-You'll need to follow these instructions if you plan on uploading media to Twitter, and/or you are not using Arcade for authorization.
-
-1. Create a Twitter developer account
-2. Create a new app and give it a name.
-3. Copy the `API Key`, `API Key Secret` and `Bearer Token` and set them as `TWITTER_API_KEY`, `TWITTER_API_KEY_SECRET`, and `TWITTER_BEARER_TOKEN` in your `.env` file.
-4. After saving, visit the App Dashboard. Find the `User authentication settings` section, and click the `Set up` button. This is how you will authorize users to use the Twitter API on their behalf.
-5. Set the following fields:
-
-- `App permissions`: `Read and write`
-- `Type of App`: `Web App, Automated App or Bot`
-- `App info`:
-  - `Callback URI/Redirect URL`: `http://localhost:3000/auth/twitter/callback`
-  - `Website URL`: Your website URL
-
-6. Save. You'll then be given a `Client ID` and `Client Secret`. Set these as `TWITTER_CLIENT_ID` and `TWITTER_CLIENT_SECRET` in your `.env` file.
-
-Once done, run the `yarn start:auth` command to run the Twitter OAuth server. Open [http://localhost:3000](http://localhost:3000) in your browser, and click `Login with Twitter`.
-
-After authorizing your account with the app, navigate to your terminal where you'll see a JSON object logged. Copy the `token` and `tokenSecret` values and set them as `TWITTER_USER_TOKEN` and `TWITTER_USER_TOKEN_SECRET` in your `.env` file.
-
-#### LinkedIn app setup
-
-You'll need to follow these instructions if you plan on posting to LinkedIn and are not using Arcade for authorization.
-
-1. Create a new LinkedIn developer account, and app [here](https://developer.linkedin.com/)
-2. After creating your app, navigate to the `Auth` tab, and add a new authorized redirect URL for OAuth 2.0. Set it to `http://localhost:3000/auth/linkedin/callback`
-3. Go to the `Products` tab and enable the `Share on LinkedIn` and `Sign In with LinkedIn using OpenID Connect` products.
-
-<details>
-<summary>If you plan on posting from company pages, you'll need to do the following:</summary>
-
-1. If you plan on posting from company pages, you'll also need to enable the `Advertising API` product. Furthermore, ensure your personal account has at least one one of the following roles with the company page:
-
-- `ADMINISTRATOR`
-- `DIRECT_SPONSORED_CONTENT_POSTER`
-- `RECRUITING_POSTER`
-
-2. Next, ensure your company page has verified the app. You can create a verification link on the `Settings` tab of your app, then click the `Verify` button on the company page card.
-3. Once requesting access, you'll need to fill out a form for verification. Once submitted, you should receive an email stating you've been granted developer access which will give you the proper permission to test out the API until it's been approved.
-4. Inside the [authorization server file (./src/clients/auth-server.ts)](./src/clients/auth-server.ts), ensure the `w_organization_social` scope is enabled inside the scopes string in the `/auth/linkedin` route. Once done, the scopes string should look like this: `openid profile email w_member_social w_organization_social`
-5. Get the organization ID from the URL of the company page when you're logged in as an admin and set it as the `LINKEDIN_ORGANIZATION_ID` environment variable. For example, if the URL is `https://www.linkedin.com/company/12345678/admin/dashboard/`, the organization ID would be `12345678`.
-
-> [!NOTE]
-> If you plan on only posting from the company account, you can set the `POST_TO_LINKEDIN_ORGANIZATION` to `"true"` in your `.env` file. If you want to choose dynamically, you can set this to `true`/`false` in the configurable fields (`postToLinkedInOrganization`) when invoking the `generate_post` graph.
->
-> This value will take precedence over the `POST_TO_LINKEDIN_ORGANIZATION` environment variable.
-
-</details>
-
-4. Save the following environment variables in your `.env` file:
-
-- `LINKEDIN_CLIENT_ID`
-- `LINKEDIN_CLIENT_SECRET`
-
-5. Run the `yarn start:auth` command to run the LinkedIn OAuth server. Open [http://localhost:3000](http://localhost:3000) in your browser, and click `Login with LinkedIn`.
-6. After logging in, copy the `access_token` and `sub` values from the objects logged to the terminal. Set these values as `LINKEDIN_ACCESS_TOKEN` (`access_token`) and `LINKEDIN_PERSON_URN` (`sub`) in your `.env` file.
-
-</details>
-
-### Setup Supabase
-
-Supabase is required for storing images found/generated by the agent. This step is not required for running the agent in basic setup mode.
-
-To setup Supabase, create an account and a new project.
-
-Set the `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` environment variables to the values provided by Supabase.
-
-Create a new storage bucket called `images`. Make sure the bucket is set to public to the image URLs are accessible. Also ensure the max upload size is set to at least 5MB inside the global project settings, and the bucket specific settings.
-
-### Setup Slack
-
-Slack integration is optional, but recommended if you intend on using the `ingest_data` agent, or having updates sent to Slack.
-
-This agent can be used in a cron job to fetch messages from a Slack channel, and call the `generate_post` graph for each message. We use this flow internally at LangChain to enable having a single Slack channel for submitting relevant URLs to the agent, which are then turned into posts once daily.
-
-To configure the Slack integration, create a new Slack app and install it into your desired Slack workspace.
-
-Once installed, ensure it has access to the channel you want to ingest messages from. Additionally, if you want it to send update messages to Slack, it will need write permissions to the workspace.
-
-Finally, make sure the `SLACK_BOT_TOKEN` environment variable is set in your `.env` file. Then, when you create a cron (see the [Setup Crons](#setup-crons) section), you'll only have to pass in the channel ID to ingest messages from.
-
-To enable sending updates to Slack, add a `SLACK_CHANNEL_ID` environment variable to your `.env` file with the channel ID you want to send updates to (at LangChain, we have one channel for sending content links, and a separate one for sending update messages).
-
-### Setup GitHub
-
-The GitHub API token is required to fetch details about GitHub repository URLs submitted to the agent. This is not required if you do not plan on sending GitHub URLs to the agent.
-
-To get a GitHub API token, create a new fine grained token with the `Public Repositories (read-only)` scope at a minimum. If you intend on using this agent for private GitHub repositories, you'll need to give the token access to those repositories as well.
-
-Ensure this is set as `GITHUB_TOKEN` in your `.env` file.
-
-# Usage
-
-## Generate Post
-
-Once all the setup steps have been completed, start your graph server by running:
-
-```bash
-yarn langgraph:in_mem:up
-```
-
-> [!NOTE]
-> The first time running this command (or if a new version of `@langchain/langgraph-cli` has been released), it will ask you to accept an install for the CLI. Enter `y` to accept.
-
-Once the server is ready, you can execute the following command to generate a post:
-
-(before doing this, you should edit the file so that the text only mode is set to false: `[TEXT_ONLY_MODE]: false` if using advanced setup mode)
-
-```bash
-yarn generate_post
-```
-
-This will kick off a new run to generate a post on a [LangChain blog post](https://blog.langchain.dev/customers-appfolio/).
-
-To view the output, either inspect it in LangSmith, or use [the Agent Inbox](#setup-agent-inbox).
-
-You may also modify this script to pass different URLs to generate posts for other content.
-
-## Setup Crons
-
-The Agent Inbox is most powerful when used with cron jobs. Doing this allows you to send links to generate posts on to a Slack channel, and have the cron job check for these links asynchronously. With this setup, you can send links to Slack, and have the inbox handle the rest while you sleep.
-
-We have a series of scripts to help with this, which you can find in the [`scripts/crons`](./scripts/crons) directory. In this section, we'll explain how to quickly create a cron for ingesting links to your graph from Slack.
-
-### Slack Setup
-
-Before we get started, ensure you have the proper Slack integration setup, as described in the [Setup Slack](#setup-slack) section. Then, edit the [`create-cron.ts`](./scripts/crons/create-cron.ts) file, and set the `slackChannelId` field to the channel ID of the channel you want to ingest links from.
-
-After editing, run the following command to create the cron:
-
-```bash
-yarn cron:create
-```
-
-This will create a new cron job that will ingest links from Slack into your graph, once daily.
-
-## Prebuilt Scripts
-
-For more information on all of the prebuilt scripts, see the [`scripts/README.md`](./scripts/README.md) file.
-
-# Setup Agent Inbox
-
-The Agent Inbox is the easiest way to view interrupted events, and manage accepting, responding, or other allowed actions. To view your events in the inbox, you can either add your graph to the deployed version of the Agent Inbox, or clone & run the Agent Inbox locally.
-
-## Using the deployed inbox
-
-The Agent Inbox is setup in a way that allows for any graph --local or deployed-- to be added & accessed via the UI.
-
-To add your local graph to the inbox, visit the deployed site here: [dev.agentinbox.ai](https://dev.agentinbox.ai/).
-
-If it's your first time vising the site, you'll immediately be prompted to add a new graph. Fill out the form with the following values:
-
-- Graph ID: `generate_post`
-- Graph API URL: `http://localhost:54367`
-- Name: (optional) `Generate Post (local)`
-
-After saving, you should be able to view your graph in the inbox. If you do this after invoking your graph (and waiting for the thread to interrupt), it will automatically fetch the interrupted event.
-
-## Using the local inbox
-
-To run the Agent Inbox locally, follow the setup instructions [here](https://github.com/langchain-ai/agent-inbox/blob/main/README.md).
-
-Once the web server is running, open your browser and visit [http://localhost:3000](http://localhost:3000). This will then prompt you to add your graph to the inbox.
-
-Fill out the form with the following values:
-
-- Graph ID: `generate_post`
-- Graph API URL: `http://localhost:54367`
-- Name: (optional) `Generate Post (local)`
-
-## Using the Agent Inbox with a graph deployed on LangGraph Platform
-
-The Agent Inbox can also be used with graph's deployed in production on LangGraph Platform. To use these graphs, the setup steps are the exact same, with the only difference being the graph API URL should be the URL of the deployed graph, and you're required to set a LangSmith API key. This is required to fetch & invoke the deployed graph. LangSmith API keys are stored in your browser's local storage, and never stored on the server.
-
-# Customization
-
-## Prompts
-
-This agent is setup to generate posts for LangChain, using LangChain products as context. To use the agent for your own use case, you should update the following prompts/prompt sections inside the [`prompts`](./src/agents/generate-post/prompts/index.ts) folder:
-
-- `BUSINESS_CONTEXT` - Context to be used when checking whether or not content is relevant to your business/use case.
-- `TWEET_EXAMPLES` ([`prompts/examples.ts`](./src/agents/generate-post/prompts/examples.ts)) - A list of examples of posts you'd like the agent to use as a guide when generating the final post.
-- `POST_STRUCTURE_INSTRUCTIONS` - A set of structure instructions for the agent to follow when generating the final post.
-- `POST_CONTENT_RULES` - A set of general writing style/content guidelines for the agent to follow when generating a post.
-
-The prompt for the marketing report is located in the [`generate-post/nodes/generate-report/prompts.ts`](./src/agents/generate-post/nodes/generate-report/prompts.ts) file. You likely don't need to update this, as it's already structured to be general.
-
-## Post Style
-
-There are two main prompts to modify to change the style of the posts.
-
-1. Post structure instructions (`POST_STRUCTURE_INSTRUCTIONS`). These are the instructions the LLM will follow for how to structure the post generations. This should _not_ be where you specify tone, or writing style. This prompt is used to set the structure each post should follow. By default, it's prompted to include three parts: `Header`, `Body`, `Call to action`. When experimenting with this prompt this, try removing it completely, instead relying on the few-shot examples (`TWEET_EXAMPLES`) and the content rules (`POST_CONTENT_RULES`).
-2. Few-shot examples (`TWEET_EXAMPLES`). These are the examples given to the LLM of which it's prompted to use as examples for style, content, tone and structure. This is arguably one of the most important parts of the prompt. Currently, these are set to a handful of Tweets by popular AI focused Twitter accounts. You should _definitely_ update these if you want to generate non-AI focused Tweets, instead with examples of Tweets/posts on your target content.
-3. "Business context" (`BUSINESS_CONTEXT`). This prompt is used widely throughout the agent to provide context into your main goal of the social media agent. For us at LangChain, this prompt is used to describe the different LangChain products and services. The default prompt is focused on AI content, but should be updated/edited to match your use case. This prompt is used in verifying content is relevant for you, generating marketing reports, and generating tweets.
+<p align="center">
+  <strong>⭐ Nếu bạn thấy dự án hữu ích, hãy cho một Star trên GitHub!</strong>
+</p>
